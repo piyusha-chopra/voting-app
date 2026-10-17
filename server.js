@@ -12,9 +12,12 @@ app.get('/',(req,res)=>{
 
 //import router files
 const userRoutes=require('./routes/userRoutes');
+const candidateRoutes=require('./routes/candidateRoutes');
+
 
 //use the routes
 app.use('/user',userRoutes);
+app.use('/candidate',candidateRoutes);
 
 const PORT=process.env.PORT || 3000;
 

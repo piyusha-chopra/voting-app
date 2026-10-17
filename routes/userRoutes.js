@@ -1,7 +1,7 @@
 const express=require('express');
 const router=express.Router();
 const User=require('../models/user');
-const {jwtAuthMiddleware, generateToken}=require('../jwt')
+const {jwtAuthMiddleware, generateToken}=require('../jwt');
 
 
 //Post route for user
@@ -12,6 +12,13 @@ router.post('/signup',async (req,res)=>{
         //extracting user data from request body
         const userData=req.body;
 
+        const adminUser=await User.findOne({role:'admin'});
+
+        if(userData.role==='admin' && adminUser){
+            console.log('Admin already exists');
+            return res.status(400).json({message:'Admin already exists'});
+
+        }
         //creating User document using mongoose schema
         const newUser=new User(userData);
         
@@ -24,11 +31,11 @@ router.post('/signup',async (req,res)=>{
         }
 
         const token=generateToken(payload);
-        res.status(200).json({response:response, token:token});
+        return res.status(200).json({response:response, token:token});
 
     }catch(err){
         console.log(err);
-        res.status(500).json({err:'Error saving user'});
+        return res.status(500).json({err:'Internal server error'});
     }
 
 });
@@ -54,7 +61,7 @@ router.post('/login',async (req,res)=>{
         const token=generateToken(payload);
 
         //return token as response
-        res.json({message:'Login sucessful', token});
+        return res.json({message:'Login sucessful', token});
 
     }catch(err){
         console.log(err);
@@ -77,7 +84,7 @@ router.get('/profile',jwtAuthMiddleware, async (req,res)=>{
         //finding user by userId
         const user= await User.findById(userId);
 
-        res.status(200).json({user});
+        return res.status(200).json({user});
 
     }catch(err){
 
@@ -109,11 +116,11 @@ router.put('/profile/password',jwtAuthMiddleware,async (req,res)=>{
         user.password=updatedPassword;
         await user.save();
 
-        res.status(200).json({message:'Password updated successfully'});
+        return res.status(200).json({message:'Password updated successfully'});
         
     }catch(err){
-        console.log('error updating password');
-        res.status(500).json({err:'error updating password'});
+        console.log(err);
+        return res.status(500).json({err:'Internal server error'});
     }
 })
 
